@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSRP Phone</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="phone-container" class="hidden">
+        <div class="phone">
+            <div class="phone-header">
+                <div class="status-bar">
+                    <span id="phone-number">Loading...</span>
+                    <span class="close-btn" onclick="closePhone()">×</span>
+                </div>
+            </div>
+            
+            <div class="phone-content">
+                <!-- Home Screen -->
+                <div id="home-screen" class="screen active">
+                    <h2>Phone</h2>
+                    <div class="app-grid">
+                        <div class="app-icon" onclick="openApp('contacts')">
+                            <span>📞</span>
+                            <p>Call</p>
+                        </div>
+                        <div class="app-icon" onclick="openApp('messages')">
+                            <span>💬</span>
+                            <p>Messages</p>
+                        </div>
+                        <div class="app-icon" onclick="openApp('history')">
+                            <span>📋</span>
+                            <p>History</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Call Screen -->
+                <div id="contacts-screen" class="screen">
+                    <div class="screen-header">
+                        <button class="back-btn" onclick="openApp('home')">← Back</button>
+                        <h3>Make a Call</h3>
+                    </div>
+                    <div class="screen-body">
+                        <input type="text" id="call-number-input" placeholder="Enter phone number" class="input-field">
+                        <button class="btn-primary" onclick="makeCall()">Call</button>
+                    </div>
+                </div>
+
+                <!-- Messages Screen -->
+                <div id="messages-screen" class="screen">
+                    <div class="screen-header">
+                        <button class="back-btn" onclick="openApp('home')">← Back</button>
+                        <h3>Messages</h3>
+                    </div>
+                    <div class="screen-body">
+                        <div id="conversations-list"></div>
+                        <div class="new-message-btn">
+                            <button class="btn-primary" onclick="openApp('new-message')">New Message</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Message Screen -->
+                <div id="new-message-screen" class="screen">
+                    <div class="screen-header">
+                        <button class="back-btn" onclick="openApp('messages')">← Back</button>
+                        <h3>New Message</h3>
+                    </div>
+                    <div class="screen-body">
+                        <input type="text" id="message-number-input" placeholder="Phone number" class="input-field">
+                        <textarea id="message-text-input" placeholder="Type your message..." class="textarea-field"></textarea>
+                        <button class="btn-primary" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+
+                <!-- Conversation Screen -->
+                <div id="conversation-screen" class="screen">
+                    <div class="screen-header">
+                        <button class="back-btn" onclick="openApp('messages')">← Back</button>
+                        <h3 id="conversation-contact">Contact</h3>
+                    </div>
+                    <div class="screen-body">
+                        <div id="messages-list"></div>
+                        <div class="message-input-container">
+                            <textarea id="reply-text-input" placeholder="Type a message..." class="textarea-field"></textarea>
+                            <button class="btn-primary" onclick="replyMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Call History Screen -->
+                <div id="history-screen" class="screen">
+                    <div class="screen-header">
+                        <button class="back-btn" onclick="openApp('home')">← Back</button>
+                        <h3>Call History</h3>
+                    </div>
+                    <div class="screen-body">
+                        <div id="call-history-list"></div>
+                    </div>
+                </div>
+
+                <!-- Incoming Call Screen -->
+                <div id="incoming-call-screen" class="screen">
+                    <div class="call-screen">
+                        <h2>Incoming Call</h2>
+                        <p class="caller-number" id="incoming-caller-number"></p>
+                        <div class="call-actions">
+                            <button class="btn-decline" onclick="declineCall()">Decline</button>
+                            <button class="btn-accept" onclick="acceptCall()">Accept</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Outgoing Call Screen -->
+                <div id="outgoing-call-screen" class="screen">
+                    <div class="call-screen">
+                        <h2>Calling...</h2>
+                        <p class="caller-number" id="outgoing-caller-number"></p>
+                        <button class="btn-decline" onclick="endCall()">Cancel</button>
+                    </div>
+                </div>
+
+                <!-- Active Call Screen -->
+                <div id="active-call-screen" class="screen">
+                    <div class="call-screen">
+                        <h2>In Call</h2>
+                        <p class="caller-number" id="active-caller-number"></p>
+                        <p class="call-duration" id="call-duration">00:00</p>
+                        <button class="btn-decline" onclick="endCall()">End Call</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
