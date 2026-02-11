@@ -34,3 +34,15 @@ CREATE TABLE IF NOT EXISTS `phone_calls` (
   KEY `caller` (`caller`),
   KEY `receiver` (`receiver`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Phone Contacts Table
+CREATE TABLE IF NOT EXISTS `phone_contacts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `owner` varchar(20) NOT NULL,
+  `contact_number` varchar(20) NOT NULL,
+  `contact_name` varchar(50) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `owner_contact` (`owner`, `contact_number`),
+  KEY `owner` (`owner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

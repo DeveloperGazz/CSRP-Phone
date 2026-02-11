@@ -135,6 +135,13 @@ AddEventHandler('phone:startCall', function(targetNumber)
             ['@receiver'] = targetNumber,
             ['@call_type'] = 'outgoing'
         })
+        
+        -- Send system text to offline player's phone
+        MySQL.Async.execute('INSERT INTO phone_messages (sender, receiver, message) VALUES (@sender, @receiver, @message)', {
+            ['@sender'] = 'SYSTEM',
+            ['@receiver'] = targetNumber,
+            ['@message'] = 'Missed call from ' .. callerNumber
+        })
         return
     end
     
@@ -146,6 +153,20 @@ AddEventHandler('phone:startCall', function(targetNumber)
     -- Check if target is already in a call
     if activeCalls[targetPlayer] then
         TriggerClientEvent('phone:notify', src, 'Line is busy')
+        
+        -- Notify caller UI that line is busy
+        TriggerClientEvent('phone:lineBusy', src, targetNumber)
+        
+        -- Send system text to busy player about missed call
+        local targetIdentifier = GetPlayerIdentifier(targetPlayer, 0)
+        local targetActualNumber = phoneNumbers[targetIdentifier]
+        if targetActualNumber then
+            MySQL.Async.execute('INSERT INTO phone_messages (sender, receiver, message) VALUES (@sender, @receiver, @message)', {
+                ['@sender'] = 'SYSTEM',
+                ['@receiver'] = targetActualNumber,
+                ['@message'] = 'Missed call from ' .. callerNumber .. ' (you were on another call)'
+            })
+        end
         
         -- Log missed call
         MySQL.Async.execute('INSERT INTO phone_calls (caller, receiver, call_type) VALUES (@caller, @receiver, @call_type)', {
@@ -407,6 +428,85 @@ AddEventHandler('phone:getConversations', function()
             ['@number'] = phoneNumber
         }, function(conversations)
             TriggerClientEvent('phone:receiveConversations', src, conversations)
+        end)
+    end
+end)
+
+-- Get contacts
+RegisterNetEvent('phone:getContacts')
+AddEventHandler('phone:getContacts', function()
+    local src = source
+    local identifier = GetPlayerIdentifier(src, 0)
+    local phoneNumber = phoneNumbers[identifier]
+    
+    if phoneNumber then
+        MySQL.Async.fetchAll('SELECT * FROM phone_contacts WHERE owner = @owner ORDER BY contact_name ASC LIMIT @limit', {
+            ['@owner'] = phoneNumber,
+            ['@limit'] = Config.MaxContacts
+        }, function(contacts)
+            TriggerClientEvent('phone:receiveContacts', src, contacts)
+        end)
+    end
+end)
+
+-- Add contact
+RegisterNetEvent('phone:addContact')
+AddEventHandler('phone:addContact', function(contactNumber, contactName)
+    local src = source
+    local identifier = GetPlayerIdentifier(src, 0)
+    local phoneNumber = phoneNumbers[identifier]
+    
+    if not phoneNumber then
+        TriggerClientEvent('phone:notify', src, 'Error: You do not have a phone number')
+        return
+    end
+    
+    if not contactNumber or not contactName or contactNumber == '' or contactName == '' then
+        TriggerClientEvent('phone:notify', src, 'Please enter both a number and a name')
+        return
+    end
+    
+    -- Sanitize input length
+    if #contactName > 50 then
+        contactName = string.sub(contactName, 1, 50)
+    end
+    
+    MySQL.Async.execute('INSERT INTO phone_contacts (owner, contact_number, contact_name) VALUES (@owner, @number, @name) ON DUPLICATE KEY UPDATE contact_name = @name', {
+        ['@owner'] = phoneNumber,
+        ['@number'] = contactNumber,
+        ['@name'] = contactName
+    }, function(rowsChanged)
+        if rowsChanged > 0 then
+            TriggerClientEvent('phone:notify', src, 'Contact saved')
+            TriggerClientEvent('phone:contactSaved', src, contactNumber, contactName)
+        else
+            TriggerClientEvent('phone:notify', src, 'Failed to save contact')
+        end
+    end)
+end)
+
+-- Delete contact
+RegisterNetEvent('phone:deleteContact')
+AddEventHandler('phone:deleteContact', function(contactId)
+    local src = source
+    local identifier = GetPlayerIdentifier(src, 0)
+    local phoneNumber = phoneNumbers[identifier]
+    
+    if phoneNumber then
+        MySQL.Async.execute('DELETE FROM phone_contacts WHERE id = @id AND owner = @owner', {
+            ['@id'] = contactId,
+            ['@owner'] = phoneNumber
+        }, function(rowsChanged)
+            if rowsChanged > 0 then
+                TriggerClientEvent('phone:notify', src, 'Contact deleted')
+                -- Refresh contacts list
+                MySQL.Async.fetchAll('SELECT * FROM phone_contacts WHERE owner = @owner ORDER BY contact_name ASC LIMIT @limit', {
+                    ['@owner'] = phoneNumber,
+                    ['@limit'] = Config.MaxContacts
+                }, function(contacts)
+                    TriggerClientEvent('phone:receiveContacts', src, contacts)
+                end)
+            end
         end)
     end
 end)

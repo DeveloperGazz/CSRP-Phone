@@ -51,6 +51,10 @@
                                 <span>📋</span>
                                 <p>History</p>
                             </div>
+                            <div class="app-icon" onclick="openApp('addressbook')">
+                                <span>👤</span>
+                                <p>Contacts</p>
+                            </div>
                         </div>
                     </div>
 
@@ -119,6 +123,33 @@
                     </div>
                 </div>
 
+                <!-- Contacts (Address Book) Screen -->
+                <div id="addressbook-screen" class="screen">
+                    <div class="screen-header">
+                        <button class="back-btn" onclick="openApp('home')">← Back</button>
+                        <h3>Contacts</h3>
+                    </div>
+                    <div class="screen-body">
+                        <div id="contacts-list"></div>
+                        <div class="new-message-btn">
+                            <button class="btn-primary" onclick="openApp('add-contact')">Add Contact</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Contact Screen -->
+                <div id="add-contact-screen" class="screen">
+                    <div class="screen-header">
+                        <button class="back-btn" onclick="openApp('addressbook')">← Back</button>
+                        <h3>Add Contact</h3>
+                    </div>
+                    <div class="screen-body">
+                        <input type="text" id="contact-name-input" placeholder="Contact name" class="input-field">
+                        <input type="text" id="contact-number-input" placeholder="Phone number" class="input-field">
+                        <button class="btn-primary" onclick="saveContact()">Save Contact</button>
+                    </div>
+                </div>
+
                 <!-- Incoming Call Screen -->
                 <div id="incoming-call-screen" class="screen">
                     <div class="call-screen">
@@ -146,7 +177,27 @@
                         <h2>In Call</h2>
                         <p class="caller-number" id="active-caller-number"></p>
                         <p class="call-duration" id="call-duration">00:00</p>
+                        <div class="call-controls">
+                            <button class="btn-call-control" id="btn-hold" onclick="toggleHold()">
+                                <span>⏸</span>
+                                <p>Hold</p>
+                            </button>
+                            <button class="btn-call-control" id="btn-speaker" onclick="toggleSpeaker()">
+                                <span>🔊</span>
+                                <p>Speaker</p>
+                            </button>
+                        </div>
                         <button class="btn-decline" onclick="endCall()">End Call</button>
+                    </div>
+                </div>
+
+                <!-- Line Busy Screen -->
+                <div id="busy-screen" class="screen">
+                    <div class="call-screen">
+                        <h2>Line Busy</h2>
+                        <p class="caller-number" id="busy-caller-number"></p>
+                        <p style="color: #666; margin-bottom: 20px;">The person you are calling is on another call.</p>
+                        <button class="btn-decline" onclick="openApp('home')">OK</button>
                     </div>
                 </div>
                 </div>

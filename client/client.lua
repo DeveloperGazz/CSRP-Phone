@@ -51,6 +51,7 @@ function TogglePhone()
         if myPhoneNumber then
             TriggerServerEvent('phone:getCallHistory')
             TriggerServerEvent('phone:getConversations')
+            TriggerServerEvent('phone:getContacts')
         end
     end
 end
@@ -63,18 +64,23 @@ end)
 
 -- Close phone (always closes, never toggles open)
 function ClosePhone()
-    if phoneOpen then
-        phoneOpen = false
-        SetNuiFocus(false, false)
-        SendNUIMessage({
-            type = 'togglePhone',
-            show = false
-        })
-    else
-        -- Ensure NUI focus is released even if state was out of sync
-        SetNuiFocus(false, false)
-    end
+    phoneOpen = false
+    SetNuiFocus(false, false)
+    SendNUIMessage({
+        type = 'togglePhone',
+        show = false
+    })
 end
+
+-- Safety thread: ensure NUI focus matches phone state
+CreateThread(function()
+    while true do
+        Wait(1000)
+        if not phoneOpen and IsNuiFocused() then
+            SetNuiFocus(false, false)
+        end
+    end
+end)
 
 -- Start a call
 RegisterNUICallback('startCall', function(data, cb)
@@ -105,6 +111,28 @@ end)
 RegisterNUICallback('endCall', function(data, cb)
     if inCall then
         TriggerServerEvent('phone:endCall')
+    end
+    cb('ok')
+end)
+
+-- Get contacts
+RegisterNUICallback('getContacts', function(data, cb)
+    TriggerServerEvent('phone:getContacts')
+    cb('ok')
+end)
+
+-- Add contact
+RegisterNUICallback('addContact', function(data, cb)
+    if data.contactNumber and data.contactName then
+        TriggerServerEvent('phone:addContact', data.contactNumber, data.contactName)
+    end
+    cb('ok')
+end)
+
+-- Delete contact
+RegisterNUICallback('deleteContact', function(data, cb)
+    if data.contactId then
+        TriggerServerEvent('phone:deleteContact', data.contactId)
     end
     cb('ok')
 end)
@@ -202,6 +230,15 @@ AddEventHandler('phone:callDeclined', function()
     Notify('Call declined')
 end)
 
+-- Line busy
+RegisterNetEvent('phone:lineBusy')
+AddEventHandler('phone:lineBusy', function(targetNumber)
+    SendNUIMessage({
+        type = 'lineBusy',
+        phoneNumber = targetNumber
+    })
+end)
+
 -- Call ended
 RegisterNetEvent('phone:callEnded')
 AddEventHandler('phone:callEnded', function()
@@ -271,6 +308,27 @@ AddEventHandler('phone:receiveConversations', function(conversations)
         type = 'receiveConversations',
         conversations = conversations
     })
+end)
+
+-- Receive contacts
+RegisterNetEvent('phone:receiveContacts')
+AddEventHandler('phone:receiveContacts', function(contacts)
+    SendNUIMessage({
+        type = 'receiveContacts',
+        contacts = contacts
+    })
+end)
+
+-- Contact saved
+RegisterNetEvent('phone:contactSaved')
+AddEventHandler('phone:contactSaved', function(contactNumber, contactName)
+    SendNUIMessage({
+        type = 'contactSaved',
+        contactNumber = contactNumber,
+        contactName = contactName
+    })
+    -- Refresh contacts list
+    TriggerServerEvent('phone:getContacts')
 end)
 
 -- Notification event
