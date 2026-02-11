@@ -26,3 +26,6 @@ Config.MessageCost = 0            -- Cost per text message (0 = free)
 -- Call history settings
 Config.MaxCallHistory = 50        -- Maximum number of calls to store per player
 Config.MaxMessageHistory = 100    -- Maximum number of messages to store per player
+
+-- Contacts settings
+Config.MaxContacts = 100           -- Maximum number of contacts per player

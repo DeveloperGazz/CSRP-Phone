@@ -4,6 +4,9 @@ let callHistory = [];
 let conversations = [];
 let messages = [];
 let clockInterval = null;
+let contacts = [];
+let isOnHold = false;
+let isSpeakerOn = false;
 
 // Update status bar time
 function updateStatusTime() {
@@ -62,6 +65,15 @@ window.addEventListener('message', function(event) {
             break;
         case 'receiveConversations':
             displayConversations(data.conversations);
+            break;
+        case 'receiveContacts':
+            displayContacts(data.contacts);
+            break;
+        case 'contactSaved':
+            onContactSaved(data.contactNumber, data.contactName);
+            break;
+        case 'lineBusy':
+            showLineBusy(data.phoneNumber);
             break;
     }
 });
@@ -126,17 +138,20 @@ function makeCall() {
 }
 
 function showIncomingCall(phoneNumber) {
-    document.getElementById('incoming-caller-number').textContent = phoneNumber;
+    const displayName = getContactName(phoneNumber);
+    document.getElementById('incoming-caller-number').textContent = displayName;
     openApp('incoming-call');
 }
 
 function showOutgoingCall(phoneNumber) {
-    document.getElementById('outgoing-caller-number').textContent = phoneNumber;
+    const displayName = getContactName(phoneNumber);
+    document.getElementById('outgoing-caller-number').textContent = displayName;
     openApp('outgoing-call');
 }
 
 function showActiveCall(phoneNumber) {
-    document.getElementById('active-caller-number').textContent = phoneNumber;
+    const displayName = getContactName(phoneNumber);
+    document.getElementById('active-caller-number').textContent = displayName;
     document.getElementById('call-duration').textContent = '00:00';
     openApp('active-call');
 }
@@ -163,6 +178,19 @@ function declineCall() {
 }
 
 function endCall() {
+    // Reset call control states
+    isOnHold = false;
+    isSpeakerOn = false;
+    const holdBtn = document.getElementById('btn-hold');
+    const speakerBtn = document.getElementById('btn-speaker');
+    if (holdBtn) {
+        holdBtn.classList.remove('active');
+        holdBtn.querySelector('p').textContent = 'Hold';
+    }
+    if (speakerBtn) {
+        speakerBtn.classList.remove('active');
+    }
+    
     fetch(`https://${GetParentResourceName()}/endCall`, {
         method: 'POST',
         headers: {
@@ -264,7 +292,7 @@ function displayConversations(convos) {
         item.onclick = () => openConversation(convo.contact);
         
         item.innerHTML = `
-            <div class="contact-number">${convo.contact}</div>
+            <div class="contact-number">${getContactName(convo.contact)}</div>
             <div class="last-message">${convo.message}</div>
         `;
         
@@ -347,6 +375,7 @@ function displayCallHistory(calls, myNumber) {
         
         // Determine the other party's number
         const otherNumber = call.caller === myNumber ? call.receiver : call.caller;
+        const displayName = getContactName(otherNumber);
         
         // Format duration
         let durationText = 'Not answered';
@@ -361,7 +390,7 @@ function displayCallHistory(calls, myNumber) {
         const timeString = date.toLocaleString();
         
         item.innerHTML = `
-            <div class="contact-number">${otherNumber}</div>
+            <div class="contact-number">${displayName}</div>
             <div class="call-info">
                 <span class="call-type ${call.call_type}">${call.call_type}</span>
                 <span>${durationText}</span>
@@ -381,6 +410,110 @@ function displayCallHistory(calls, myNumber) {
 
 function GetParentResourceName() {
     return window.location.hostname;
+}
+
+// ===== Contacts Functions =====
+
+function saveContact() {
+    const name = document.getElementById('contact-name-input').value.trim();
+    const number = document.getElementById('contact-number-input').value.trim();
+    
+    if (name && number) {
+        fetch(`https://${GetParentResourceName()}/addContact`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contactName: name, contactNumber: number })
+        });
+        document.getElementById('contact-name-input').value = '';
+        document.getElementById('contact-number-input').value = '';
+    }
+}
+
+function deleteContact(contactId) {
+    fetch(`https://${GetParentResourceName()}/deleteContact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contactId: contactId })
+    });
+}
+
+function displayContacts(contactList) {
+    contacts = contactList;
+    const list = document.getElementById('contacts-list');
+    list.innerHTML = '';
+    
+    if (contactList.length === 0) {
+        list.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">No contacts yet</p>';
+        return;
+    }
+    
+    contactList.forEach(contact => {
+        const item = document.createElement('div');
+        item.className = 'contact-item';
+        
+        item.innerHTML = `
+            <div class="contact-item-info">
+                <div class="contact-item-name">${contact.contact_name}</div>
+                <div class="contact-item-number">${contact.contact_number}</div>
+            </div>
+            <div class="contact-item-actions">
+                <button class="contact-action-btn call" onclick="event.stopPropagation(); callContact('${contact.contact_number}')">📞</button>
+                <button class="contact-action-btn message" onclick="event.stopPropagation(); messageContact('${contact.contact_number}')">💬</button>
+                <button class="contact-action-btn delete" onclick="event.stopPropagation(); deleteContact(${contact.id})">🗑</button>
+            </div>
+        `;
+        
+        list.appendChild(item);
+    });
+}
+
+function onContactSaved(contactNumber, contactName) {
+    openApp('addressbook');
+}
+
+function callContact(phoneNumber) {
+    fetch(`https://${GetParentResourceName()}/startCall`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: phoneNumber })
+    });
+}
+
+function messageContact(phoneNumber) {
+    openConversation(phoneNumber);
+}
+
+function getContactName(phoneNumber) {
+    const contact = contacts.find(c => c.contact_number === phoneNumber);
+    return contact ? contact.contact_name : phoneNumber;
+}
+
+function showLineBusy(phoneNumber) {
+    const displayName = getContactName(phoneNumber);
+    document.getElementById('busy-caller-number').textContent = displayName;
+    openApp('busy');
+}
+
+function toggleHold() {
+    isOnHold = !isOnHold;
+    const btn = document.getElementById('btn-hold');
+    if (isOnHold) {
+        btn.classList.add('active');
+        btn.querySelector('p').textContent = 'Resume';
+    } else {
+        btn.classList.remove('active');
+        btn.querySelector('p').textContent = 'Hold';
+    }
+}
+
+function toggleSpeaker() {
+    isSpeakerOn = !isSpeakerOn;
+    const btn = document.getElementById('btn-speaker');
+    if (isSpeakerOn) {
+        btn.classList.add('active');
+    } else {
+        btn.classList.remove('active');
+    }
 }
 
 // Handle ESC key to close phone
