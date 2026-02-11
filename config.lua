@@ -2,7 +2,7 @@ Config = {}
 
 -- Phone number settings
 Config.PhoneNumberPrefix = "0"    -- Prefix for all phone numbers (format: 0xxxxxxxxxx)
-Config.PhoneNumberLength = 10     -- Length of random digits after prefix
+Config.PhoneNumberLength = 10     -- Number of random digits after prefix (total length: 11 including prefix)
 
 -- Command settings
 Config.OpenPhoneCommand = "phone" -- Command to open phone

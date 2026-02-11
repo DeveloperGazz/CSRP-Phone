@@ -61,7 +61,7 @@ RegisterNUICallback('closePhone', function(data, cb)
     cb('ok')
 end)
 
--- Force close phone (always closes, never toggles open)
+-- Close phone (always closes, never toggles open)
 function ClosePhone()
     if phoneOpen then
         phoneOpen = false
