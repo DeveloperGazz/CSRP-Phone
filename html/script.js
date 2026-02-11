@@ -4,6 +4,21 @@ let callHistory = [];
 let conversations = [];
 let messages = [];
 
+// Update status bar time
+function updateStatusTime() {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const el = document.getElementById('status-time');
+    if (el) {
+        el.textContent = hours + ':' + minutes;
+    }
+}
+
+// Start clock updates
+updateStatusTime();
+setInterval(updateStatusTime, 10000);
+
 // Listen for messages from client
 window.addEventListener('message', function(event) {
     const data = event.data;
@@ -58,6 +73,7 @@ function togglePhone(show) {
     const container = document.getElementById('phone-container');
     if (show) {
         container.classList.remove('hidden');
+        updateStatusTime();
         openApp('home');
     } else {
         container.classList.add('hidden');
