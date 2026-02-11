@@ -1,8 +1,8 @@
 Config = {}
 
 -- Phone number settings
-Config.PhoneNumberPrefix = "555"  -- Prefix for all phone numbers
-Config.PhoneNumberLength = 7      -- Length of phone numbers (excluding prefix)
+Config.PhoneNumberPrefix = "0"    -- Prefix for all phone numbers (format: 0xxxxxxxxxx)
+Config.PhoneNumberLength = 10     -- Length of random digits after prefix
 
 -- Command settings
 Config.OpenPhoneCommand = "phone" -- Command to open phone

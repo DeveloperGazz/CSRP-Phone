@@ -2,13 +2,13 @@
 local activeCalls = {}
 local phoneNumbers = {}
 
--- Generate a unique phone number
+-- Generate a unique phone number (format: 0xxxxxxxxxx)
 function GeneratePhoneNumber()
     local number
     local exists = true
     
     while exists do
-        number = Config.PhoneNumberPrefix .. "-"
+        number = Config.PhoneNumberPrefix
         for i = 1, Config.PhoneNumberLength do
             number = number .. math.random(0, 9)
         end
