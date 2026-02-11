@@ -26,20 +26,8 @@ function GeneratePhoneNumber()
     return number
 end
 
--- Get or create phone number for player
+-- Get phone number for player (from cache only)
 function GetPlayerPhoneNumber(identifier)
-    if phoneNumbers[identifier] then
-        return phoneNumbers[identifier]
-    end
-    
-    MySQL.Async.fetchScalar('SELECT phone_number FROM phone_numbers WHERE identifier = @identifier', {
-        ['@identifier'] = identifier
-    }, function(number)
-        if number then
-            phoneNumbers[identifier] = number
-        end
-    end)
-    
     return phoneNumbers[identifier]
 end
 
@@ -212,8 +200,8 @@ AddEventHandler('phone:acceptCall', function(callerNumber)
     
     -- Log call as outgoing for caller
     MySQL.Async.execute('INSERT INTO phone_calls (caller, receiver, call_type) VALUES (@caller, @receiver, @call_type)', {
-        ['@caller'] = receiverNumber,
-        ['@receiver'] = callerNumber,
+        ['@caller'] = callerNumber,
+        ['@receiver'] = receiverNumber,
         ['@call_type'] = 'outgoing'
     })
 end)
@@ -392,17 +380,29 @@ AddEventHandler('phone:getConversations', function()
         MySQL.Async.fetchAll([[
             SELECT 
                 CASE 
-                    WHEN sender = @number THEN receiver 
-                    ELSE sender 
+                    WHEN pm.sender = @number THEN pm.receiver 
+                    ELSE pm.sender 
                 END AS contact,
-                message,
-                sent_at,
-                is_read,
-                id
-            FROM phone_messages 
-            WHERE sender = @number OR receiver = @number 
-            GROUP BY contact
-            ORDER BY sent_at DESC
+                pm.message,
+                pm.sent_at,
+                pm.is_read,
+                pm.id
+            FROM phone_messages pm
+            INNER JOIN (
+                SELECT 
+                    CASE 
+                        WHEN sender = @number THEN receiver 
+                        ELSE sender 
+                    END AS contact_number,
+                    MAX(sent_at) AS max_sent_at
+                FROM phone_messages
+                WHERE sender = @number OR receiver = @number
+                GROUP BY contact_number
+            ) latest ON (
+                (pm.sender = @number AND pm.receiver = latest.contact_number) OR
+                (pm.receiver = @number AND pm.sender = latest.contact_number)
+            ) AND pm.sent_at = latest.max_sent_at
+            ORDER BY pm.sent_at DESC
         ]], {
             ['@number'] = phoneNumber
         }, function(conversations)
