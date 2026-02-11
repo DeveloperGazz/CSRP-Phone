@@ -30,6 +30,9 @@ window.addEventListener('message', function(event) {
         case 'setPhoneNumber':
             setPhoneNumber(data.phoneNumber);
             break;
+        case 'openScreen':
+            openApp(data.screen);
+            break;
         case 'incomingCall':
             showIncomingCall(data.phoneNumber);
             break;
@@ -114,6 +117,8 @@ function openApp(appName) {
 }
 
 function closePhone() {
+    const container = document.getElementById('phone-container');
+    container.classList.add('hidden');
     fetch(`https://${GetParentResourceName()}/closePhone`, {
         method: 'POST',
         headers: {
@@ -267,13 +272,21 @@ function receiveMessage(phoneNumber, message) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({})
+            body: JSON.stringify({contactNumber: currentConversation})
         });
     }, 100);
 }
 
 function onMessageSent(phoneNumber, message) {
-    openApp('messages');
+    // Refresh conversations list
+    fetch(`https://${GetParentResourceName()}/getMessages`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({contactNumber: phoneNumber})
+    });
+    openConversation(phoneNumber);
 }
 
 function displayConversations(convos) {
@@ -468,6 +481,12 @@ function displayContacts(contactList) {
 }
 
 function onContactSaved(contactNumber, contactName) {
+    // Refresh contacts list
+    fetch(`https://${GetParentResourceName()}/getContacts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    });
     openApp('addressbook');
 }
 

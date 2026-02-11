@@ -23,6 +23,7 @@ AddEventHandler('phone:receivePhoneNumber', function(phoneNumber)
     if phoneOpen then
         TriggerServerEvent('phone:getCallHistory')
         TriggerServerEvent('phone:getConversations')
+        TriggerServerEvent('phone:getContacts')
     end
 end)
 
@@ -56,6 +57,20 @@ function TogglePhone()
     end
 end
 
+-- Open phone to a specific screen (used for incoming calls/messages)
+function OpenPhoneToScreen(screenName)
+    phoneOpen = true
+    SetNuiFocus(true, true)
+    SendNUIMessage({
+        type = 'togglePhone',
+        show = true
+    })
+    SendNUIMessage({
+        type = 'openScreen',
+        screen = screenName
+    })
+end
+
 -- Close phone from NUI
 RegisterNUICallback('closePhone', function(data, cb)
     ClosePhone()
@@ -70,12 +85,18 @@ function ClosePhone()
         type = 'togglePhone',
         show = false
     })
+    -- Ensure focus is released after a short delay in case the initial release was not processed
+    SetTimeout(100, function()
+        if not phoneOpen then
+            SetNuiFocus(false, false)
+        end
+    end)
 end
 
 -- Safety thread: ensure NUI focus matches phone state
 CreateThread(function()
     while true do
-        Wait(1000)
+        Wait(500)
         if not phoneOpen and IsNuiFocused() then
             SetNuiFocus(false, false)
         end
@@ -163,6 +184,12 @@ end)
 RegisterNetEvent('phone:incomingCall')
 AddEventHandler('phone:incomingCall', function(callerNumber)
     incomingCallFrom = callerNumber
+    
+    -- Open phone if not already open so the player can see the incoming call
+    if not phoneOpen then
+        OpenPhoneToScreen('incoming-call')
+    end
+    
     SendNUIMessage({
         type = 'incomingCall',
         phoneNumber = callerNumber
@@ -261,6 +288,13 @@ end)
 -- Receive message
 RegisterNetEvent('phone:receiveMessage')
 AddEventHandler('phone:receiveMessage', function(senderNumber, message)
+    -- Open phone if not already open so the player can see the message notification
+    if not phoneOpen then
+        OpenPhoneToScreen('messages')
+        -- Refresh conversations when opening for a message
+        TriggerServerEvent('phone:getConversations')
+    end
+    
     SendNUIMessage({
         type = 'receiveMessage',
         phoneNumber = senderNumber,
