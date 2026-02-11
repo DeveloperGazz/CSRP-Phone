@@ -9,32 +9,50 @@
 <body>
     <div id="phone-container" class="hidden">
         <div class="phone">
-            <div class="phone-header">
-                <div class="status-bar">
-                    <span id="phone-number">Loading...</span>
-                    <span class="close-btn" onclick="closePhone()">×</span>
+            <!-- Side buttons -->
+            <div class="side-button side-button-left"></div>
+            <div class="side-button side-button-right-top"></div>
+            <div class="side-button side-button-right-bottom"></div>
+
+            <div class="phone-screen">
+                <!-- Notch -->
+                <div class="notch">
+                    <div class="notch-camera"></div>
+                    <div class="notch-speaker"></div>
                 </div>
-            </div>
+
+                <!-- Status bar -->
+                <div class="status-bar">
+                    <span id="status-time" class="status-time">12:00</span>
+                    <span class="status-icons">
+                        <span class="status-signal">●●●●○</span>
+                        <span class="status-battery">🔋</span>
+                        <span class="close-btn" onclick="closePhone()">×</span>
+                    </span>
+                </div>
             
-            <div class="phone-content">
-                <!-- Home Screen -->
-                <div id="home-screen" class="screen active">
-                    <h2>Phone</h2>
-                    <div class="app-grid">
-                        <div class="app-icon" onclick="openApp('contacts')">
-                            <span>📞</span>
-                            <p>Call</p>
+                <div class="phone-content">
+                    <!-- Home Screen -->
+                    <div id="home-screen" class="screen active">
+                        <div class="home-my-number">
+                            <span class="my-number-label">My Number</span>
+                            <span id="phone-number" class="my-number-value">Loading...</span>
                         </div>
-                        <div class="app-icon" onclick="openApp('messages')">
-                            <span>💬</span>
-                            <p>Messages</p>
-                        </div>
-                        <div class="app-icon" onclick="openApp('history')">
-                            <span>📋</span>
-                            <p>History</p>
+                        <div class="app-grid">
+                            <div class="app-icon" onclick="openApp('contacts')">
+                                <span>📞</span>
+                                <p>Call</p>
+                            </div>
+                            <div class="app-icon" onclick="openApp('messages')">
+                                <span>💬</span>
+                                <p>Messages</p>
+                            </div>
+                            <div class="app-icon" onclick="openApp('history')">
+                                <span>📋</span>
+                                <p>History</p>
+                            </div>
                         </div>
                     </div>
-                </div>
 
                 <!-- Call Screen -->
                 <div id="contacts-screen" class="screen">
@@ -130,6 +148,12 @@
                         <p class="call-duration" id="call-duration">00:00</p>
                         <button class="btn-decline" onclick="endCall()">End Call</button>
                     </div>
+                </div>
+                </div>
+
+                <!-- Home indicator bar -->
+                <div class="home-indicator-bar">
+                    <div class="home-indicator"></div>
                 </div>
             </div>
         </div>
