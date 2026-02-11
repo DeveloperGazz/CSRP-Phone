@@ -19,6 +19,11 @@ AddEventHandler('phone:receivePhoneNumber', function(phoneNumber)
         type = 'setPhoneNumber',
         phoneNumber = phoneNumber
     })
+    -- If phone is open and we just got our number, fetch history/conversations
+    if phoneOpen then
+        TriggerServerEvent('phone:getCallHistory')
+        TriggerServerEvent('phone:getConversations')
+    end
 end)
 
 -- Open/Close phone
@@ -37,18 +42,39 @@ function TogglePhone()
         show = phoneOpen
     })
     
-    if phoneOpen and myPhoneNumber then
+    if phoneOpen then
+        -- Request phone number if we don't have one yet
+        if not myPhoneNumber then
+            TriggerServerEvent('phone:getPhoneNumber')
+        end
         -- Request call history and conversations when opening phone
-        TriggerServerEvent('phone:getCallHistory')
-        TriggerServerEvent('phone:getConversations')
+        if myPhoneNumber then
+            TriggerServerEvent('phone:getCallHistory')
+            TriggerServerEvent('phone:getConversations')
+        end
     end
 end
 
 -- Close phone from NUI
 RegisterNUICallback('closePhone', function(data, cb)
-    TogglePhone()
+    ClosePhone()
     cb('ok')
 end)
+
+-- Close phone (always closes, never toggles open)
+function ClosePhone()
+    if phoneOpen then
+        phoneOpen = false
+        SetNuiFocus(false, false)
+        SendNUIMessage({
+            type = 'togglePhone',
+            show = false
+        })
+    else
+        -- Ensure NUI focus is released even if state was out of sync
+        SetNuiFocus(false, false)
+    end
+end
 
 -- Start a call
 RegisterNUICallback('startCall', function(data, cb)
