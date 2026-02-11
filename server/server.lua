@@ -42,6 +42,13 @@ function CreatePhoneNumber(identifier)
         if rowsChanged > 0 then
             phoneNumbers[identifier] = phoneNumber
             print("Created phone number " .. phoneNumber .. " for " .. identifier)
+            
+            -- Send welcome system text message to the new number
+            MySQL.Async.execute('INSERT INTO phone_messages (sender, receiver, message) VALUES (@sender, @receiver, @message)', {
+                ['@sender'] = 'SYSTEM',
+                ['@receiver'] = phoneNumber,
+                ['@message'] = 'Welcome to your new phone! Your number is ' .. phoneNumber .. '. You can make calls, send messages, and save contacts.'
+            })
         end
     end)
     
@@ -104,7 +111,7 @@ function GetPlayerByPhoneNumber(phoneNumber)
         if number == phoneNumber then
             for _, playerId in ipairs(GetPlayers()) do
                 if GetPlayerIdentifier(playerId, 0) == identifier then
-                    return playerId
+                    return tonumber(playerId)
                 end
             end
         end
@@ -118,6 +125,16 @@ AddEventHandler('phone:startCall', function(targetNumber)
     local src = source
     local identifier = GetPlayerIdentifier(src, 0)
     local callerNumber = phoneNumbers[identifier]
+    
+    -- If phone number not in cache, try to fetch it from database
+    if not callerNumber then
+        callerNumber = MySQL.Sync.fetchScalar('SELECT phone_number FROM phone_numbers WHERE identifier = @identifier', {
+            ['@identifier'] = identifier
+        })
+        if callerNumber then
+            phoneNumbers[identifier] = callerNumber
+        end
+    end
     
     if not callerNumber then
         TriggerClientEvent('phone:notify', src, 'Error: You do not have a phone number')
@@ -188,6 +205,16 @@ AddEventHandler('phone:acceptCall', function(callerNumber)
     local src = source
     local identifier = GetPlayerIdentifier(src, 0)
     local receiverNumber = phoneNumbers[identifier]
+    
+    -- If phone number not in cache, try to fetch it from database
+    if not receiverNumber then
+        receiverNumber = MySQL.Sync.fetchScalar('SELECT phone_number FROM phone_numbers WHERE identifier = @identifier', {
+            ['@identifier'] = identifier
+        })
+        if receiverNumber then
+            phoneNumbers[identifier] = receiverNumber
+        end
+    end
     
     local callerPlayer = GetPlayerByPhoneNumber(callerNumber)
     
@@ -307,6 +334,16 @@ AddEventHandler('phone:sendMessage', function(targetNumber, message)
     local src = source
     local identifier = GetPlayerIdentifier(src, 0)
     local senderNumber = phoneNumbers[identifier]
+    
+    -- If phone number not in cache, try to fetch it from database
+    if not senderNumber then
+        senderNumber = MySQL.Sync.fetchScalar('SELECT phone_number FROM phone_numbers WHERE identifier = @identifier', {
+            ['@identifier'] = identifier
+        })
+        if senderNumber then
+            phoneNumbers[identifier] = senderNumber
+        end
+    end
     
     if not senderNumber then
         TriggerClientEvent('phone:notify', src, 'Error: You do not have a phone number')
@@ -455,6 +492,16 @@ AddEventHandler('phone:addContact', function(contactNumber, contactName)
     local src = source
     local identifier = GetPlayerIdentifier(src, 0)
     local phoneNumber = phoneNumbers[identifier]
+    
+    -- If phone number not in cache, try to fetch it from database
+    if not phoneNumber then
+        phoneNumber = MySQL.Sync.fetchScalar('SELECT phone_number FROM phone_numbers WHERE identifier = @identifier', {
+            ['@identifier'] = identifier
+        })
+        if phoneNumber then
+            phoneNumbers[identifier] = phoneNumber
+        end
+    end
     
     if not phoneNumber then
         TriggerClientEvent('phone:notify', src, 'Error: You do not have a phone number')
