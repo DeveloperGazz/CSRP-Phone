@@ -85,7 +85,7 @@ function ClosePhone()
         type = 'togglePhone',
         show = false
     })
-    -- Double ensure focus is released after a short delay
+    -- Ensure focus is released after a short delay in case the initial release was not processed
     SetTimeout(100, function()
         if not phoneOpen then
             SetNuiFocus(false, false)
