@@ -76,10 +76,7 @@ end
 CreateThread(function()
     while true do
         Wait(1000)
-        if not phoneOpen and not IsNuiFocused() then
-            -- All good
-        elseif not phoneOpen and IsNuiFocused() then
-            -- Phone is closed but NUI focus is stuck
+        if not phoneOpen and IsNuiFocused() then
             SetNuiFocus(false, false)
         end
     end
