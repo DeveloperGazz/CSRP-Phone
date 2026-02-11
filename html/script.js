@@ -3,6 +3,7 @@ let currentConversation = null;
 let callHistory = [];
 let conversations = [];
 let messages = [];
+let clockInterval = null;
 
 // Update status bar time
 function updateStatusTime() {
@@ -14,10 +15,6 @@ function updateStatusTime() {
         el.textContent = hours + ':' + minutes;
     }
 }
-
-// Start clock updates
-updateStatusTime();
-setInterval(updateStatusTime, 10000);
 
 // Listen for messages from client
 window.addEventListener('message', function(event) {
@@ -74,9 +71,16 @@ function togglePhone(show) {
     if (show) {
         container.classList.remove('hidden');
         updateStatusTime();
+        if (!clockInterval) {
+            clockInterval = setInterval(updateStatusTime, 10000);
+        }
         openApp('home');
     } else {
         container.classList.add('hidden');
+        if (clockInterval) {
+            clearInterval(clockInterval);
+            clockInterval = null;
+        }
     }
 }
 
