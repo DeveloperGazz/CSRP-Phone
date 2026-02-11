@@ -2,27 +2,32 @@
 
 A complete, standalone phone system for FiveM servers with integrated PMA Voice support.
 
-## Quick Links
+## 🚀 Quick Links
 
+- **[Quick Start Guide](QUICKSTART.md)** - Get started in 5 minutes! ⚡
 - [Installation Guide](INSTALL.md) - Step-by-step setup
 - [Features Overview](FEATURES.md) - Complete feature list
 - [API Examples](API_EXAMPLES.md) - Integration examples
-- [Main Documentation](README.md) - Full documentation
+- [Changelog](CHANGELOG.md) - Version history
+- [Full Documentation](#full-documentation) - Detailed docs below
 
-## Quick Start
+## ⚡ Quick Start
 
 1. Import `phone.sql` to your database
 2. Add `ensure CSRP-Phone` to server.cfg (after mysql-async and pma-voice)
 3. Restart server
 4. Press F1 to open phone
 
-## Features
+**New to this?** Read the [Quick Start Guide](QUICKSTART.md) for detailed instructions!
 
-✅ Phone calls with PMA Voice  
-✅ Text messaging  
-✅ Call history  
-✅ Automatic phone numbers  
-✅ Database integration  
-✅ Modern UI  
+## ✨ Features
 
-For full documentation, see README.md
+✅ **Phone Calls** - PMA Voice integration  
+✅ **Text Messaging** - Conversations & history  
+✅ **Call History** - Incoming/outgoing/missed logs  
+✅ **Auto Phone Numbers** - No manual setup needed  
+✅ **Database Backed** - MySQL/MariaDB support  
+✅ **Modern UI** - Beautiful gradient design  
+✅ **Framework Free** - Works with any setup  
+
+## 📖 Full Documentation
