@@ -1,1 +1,28 @@
+# CSRP Phone - Standalone Phone System for FiveM
 
+A complete, standalone phone system for FiveM servers with integrated PMA Voice support.
+
+## Quick Links
+
+- [Installation Guide](INSTALL.md) - Step-by-step setup
+- [Features Overview](FEATURES.md) - Complete feature list
+- [API Examples](API_EXAMPLES.md) - Integration examples
+- [Main Documentation](README.md) - Full documentation
+
+## Quick Start
+
+1. Import `phone.sql` to your database
+2. Add `ensure CSRP-Phone` to server.cfg (after mysql-async and pma-voice)
+3. Restart server
+4. Press F1 to open phone
+
+## Features
+
+✅ Phone calls with PMA Voice  
+✅ Text messaging  
+✅ Call history  
+✅ Automatic phone numbers  
+✅ Database integration  
+✅ Modern UI  
+
+For full documentation, see README.md
