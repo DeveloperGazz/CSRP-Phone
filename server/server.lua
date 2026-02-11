@@ -500,7 +500,12 @@ AddEventHandler('phone:deleteContact', function(contactId)
             if rowsChanged > 0 then
                 TriggerClientEvent('phone:notify', src, 'Contact deleted')
                 -- Refresh contacts list
-                TriggerServerEvent('phone:getContacts')
+                MySQL.Async.fetchAll('SELECT * FROM phone_contacts WHERE owner = @owner ORDER BY contact_name ASC LIMIT @limit', {
+                    ['@owner'] = phoneNumber,
+                    ['@limit'] = Config.MaxContacts
+                }, function(contacts)
+                    TriggerClientEvent('phone:receiveContacts', src, contacts)
+                end)
             end
         end)
     end
